@@ -24,8 +24,8 @@ Route::get('/', function () {
 Route::get('/about', function () {
     return view('about', [
         "title" => "About",
-        "name" => "Muhammad Rejka Permana",
-        "email" => "permanarejka@gmail.com",
+        "name" => "Yoga Prawira Kusuma",
+        "email" => "yprawira852@gmail.com",
         "image" => "image.jpeg"
     ]);
 });
