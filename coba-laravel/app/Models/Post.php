@@ -2,46 +2,49 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class Post 
+class Post extends Model
 {
-    private static $blog_posts = [
+    use HasFactory;
 
-        [
+    // protected $fillable = [
+    //     'title', 'excerpt','body'
+    // ];
 
-            "title"=> "Judul Post Pertama",
-            "slug"=>"judul-post-pertama",
-            "author"=>"Yoga Prawira Kusuma",
-            "body" => "Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis, 
-            quasi nesciunt eveniet unde recusandae molestiae sed culpa excepturi, 
-            nulla optio repellat iure iusto sequi perspiciatis sapiente voluptate libero quisquam nemo. Aliquid dolorem velit eaque modi, 
-            cupiditate dolore temporibus autem suscipit, id ducimus laboriosam nulla eius numquam quisquam quo facilis. Quos, hic. Aliquid, 
-            assumenda! Debitis earum at ea est, consequuntur, mollitia impedit enim voluptatibus eius nulla fugit placeat a harum beatae eos ut 
-            libero molestiae sed itaque numquam exercitationem laborum dolor!"
-        ],
+    protected $guarded = ['id'];
+    protected $with =['category', 'author'];
 
-        [
-            "title"=> "Judul Post Kedua",
-            "slug"=>"judul-post-kedua",
-            "author"=>"khalid karawita",
-            "body" => "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quas, 
-            quidem? Eligendi maiores qui quaerat cupiditate quidem doloremque, quas quisquam esse hic expedita laudantium, 
-            delectus eaque, eos sed omnis debitis sequi quibusdam. Ut veritatis aliquid porro corrupti aspernatur in dolorem ipsa! 
-            Accusantium architecto laboriosam mollitia rem eligendi quis, saepe quo alias exercitationem dicta cumque magnam vel ipsam in, 
-            quod voluptatem maiores, dignissimos nemo quidem dolorem quos aperiam voluptate omnis reiciendis? Quibusdam, provident. Quis debitis,
-             nam eaque quae consequuntur dolores delectus, earum, beatae maiores minus sunt. Deserunt ut saepe aliquam natus maxime sit reprehenderit, 
-             pariatur ad enim tempore alias cupiditate facere expedita."
-        ]
+    public function scopeFilter($query, array $filters)
+    {
+        $query->when($filters['search'] ?? false, function($query, $search) {
+            return $query->where(function($query) use ($search) {
+                 $query->where('title', 'like', '%' . $search . '%')
+                             ->orWhere('body', 'like', '%' . $search . '%');
+             });
+         });
 
-        ];
-        public static function all()
-        {
-            return collect(self::$blog_posts);
-        }
-        public static function find($slug)
-        {
-            $posts = static::all();
-            return $posts->firstWhere('slug', $slug);
-        }
-       
+         $query->when($filters['category']??false, function($query,$category) {
+            return $query->whereHas('category', function($query) use($category){
+                $query->where('slug', $category);
+            });
+        }); 
+
+        $query->when($filters['author']??false, fn($query, $author)=>
+            $query->whereHas('author', fn($query)=>
+                $query->where('username', $author)
+            )
+        );
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);   
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
