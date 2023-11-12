@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\PostController;
-use App\Models\Post;
+use App\Models\Category;
 use Illuminate\Support\Facades\Route;
-
+use App\Models\Post;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,31 +12,35 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
 |
 */
 
 Route::get('/', function () {
-    return view ('home', [
-        "title"=> "Home"
-        
+    return view('home', [
+        "title" => "Home",
+        "active" => "home"
     ]);
 });
-
 
 Route::get('/about', function () {
     return view('about', [
-        "title"=> "About",
+        "title" => "About",
+        "active" => "about",
         "name" => "Yoga Prawira Kusuma",
-        "email" => "yprawira852@gmail.com",
-        "img" => "image.jpg"
+        "email" => "Yoga@unpas.ac.id",
+        "image" => "image.jpg"
     ]);
 });
 
+Route::get('/posts', [PostController::class, 'index']);
+Route::get('posts/{post:slug}', [PostController::class, 'show']);
 
-
-
-Route::get('/blog', [PostController::class, 'index'] );
-Route::get('posts/{slug}', [PostController::class,'show'] );
-    
+Route::get('/categories', function(){
+    return view('categories', [
+        'title' => 'Post Categories',
+        'active' => 'categories',
+        'categories' => Category::all()
+    ]);
+});
